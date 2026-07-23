@@ -1,0 +1,329 @@
+title: 1990-es választási algoritmus
+on-arrival: {!
+// Az Országgyűlés összetétele 1990-ben: összesen 386 fő, három szinten elosztva.
+Q.total_seats_1990 = 386;
+Q.oevk_seat_count = 176;             // egyéni választókerületi mandátumok (fix)
+Q.territorial_seat_count_max = 152;  // területi (megyei) listás mandátumok FELSŐ KORLÁTJA
+// Q.territorial_seat_count: a megyei listák Hagenbach-Bischoff kvótás elosztásából adódik,
+// legfeljebb territorial_seat_count_max, de kvóta hiányában ennél kevesebb mandátum is kiadásra kerülhet.
+// Q.compensation_seat_count: a fennmaradó mandátumok száma
+// (total_seats_1990 - oevk_seat_count - territorial_seat_count), amit D'Hondt-tal osztunk szét a töredékszavazatokból.
+// Egyik értéket sem rögzítjük itt előre - ezeket a területi lista számítása tölti majd ki.
+
+// pártonkénti mandátum-nyilvántartás a három szinten, egyelőre üresen
+for (var party of Q.parties) {
+    Q[party + '_oevk_seats'] = 0;
+    Q[party + '_territorial_seats'] = 0;
+    Q[party + '_compensation_seats'] = 0;
+    Q[party + '_seats_1990'] = 0;
+}
+
+// Független jelöltek: pszeudo-párt, minden OEVK-ban indul egy, de KIZÁRÓLAG OEVK-mandátumot szerezhet -
+// ezért nem eleme a Q.parties tömbnek (a területi és a kompenzációs lista csak Q.parties pártjait osztja szét).
+// A független az 1. fordulótól kezdve valódi jelölt: mind az 1., mind a 2. fordulóban a "lebegő"
+// (pártpreferencia vagy második preferencia nélküli) szavazattömegből tud sztochasztikusan elvinni egy
+// hányadot - ez a hányad (capture rate) körzetenként egyszer sorsolódik, és mindkét fordulóban ugyanaz.
+Q.independent_oevk_seats = 0;
+Q.independent_capture_rate_min = 20; // % - a lebegő szavazattömeg ennyi hányadát viszi el legalább
+Q.independent_capture_rate_max = 50; // % - a lebegő szavazattömeg ennyi hányadát viszi el legfeljebb
+
+// Osztályonkénti párt-preferencia normalizálása (országos, körzetfüggetlen) - osztályonként 100%-ra skálázva.
+for (var c of Q.classes) {
+    var class_votes = 0;
+    for (var party of Q.parties) {
+        if (Q[c+'_'+party] < 0) {
+            Q[c+'_'+party] = 0;
+        }
+        class_votes += Q[c+'_'+party];
+    }
+    for (var party of Q.parties) {
+        Q[c + '_' + party + '_normalized'] = 100*Q[c+'_'+party]/class_votes;
+    }
+}
+
+// Körzetenkénti párttámogatottság: a körzet demográfiai összetétele (Q.oevk_constituencies[i].demographics)
+// szorozva az országos osztály-preferenciával, pártonként összegezve, majd 100%-ra normalizálva.
+// EGYELŐRE ez az érték szolgál a területi LISTÁS és az egyéni (OEVK) szavazatként is - a kettő csak
+// akkor válik szét, amint a független jelölteket ténylegesen bevonjuk (ők csak az OEVK-oldalt csökkentik,
+// a listát nem érintik, mert független jelöltre listás mandátum nem szerezhető).
+// Az osztály "base_nonvoter_rate" hányada eleve nem megy egyik pártra sem - ez a rész "lebegő" szavazatként
+// (constituency.floating_votes) landol, ami a 100%-os alapba beleszámít (nehezebb 50%+-ot elérni), de
+// egyelőre senki sem nyeri el - ebből meríthet majd a független jelölt, ha aktiváljuk.
+for (var constituency of Q.oevk_constituencies) {
+    var party_support = {};
+    var total_support = 0;
+    var floating_votes = 0;
+    constituency.party_class_votes = {}; // party -> class -> nyers (nem normalizált) támogatás, kell a 2. fordulós átcsúszáshoz
+    for (var party of Q.parties) {
+        constituency.party_class_votes[party] = {};
+    }
+    for (var c of Q.classes) {
+        var effective_weight = constituency.demographics[c] * (1 - Q[c + '_base_nonvoter_rate']);
+        // *100, mert a _normalized preferencia 0-100 skálán van, és a party_support ezzel a skálával
+        // számol - a lebegő tömegnek ugyanezen a skálán kell lennie, különben eltörpül mellette.
+        floating_votes += constituency.demographics[c] * Q[c + '_base_nonvoter_rate'] * 100;
+        for (var party of Q.parties) {
+            var class_support = effective_weight * Q[c + '_' + party + '_normalized'];
+            constituency.party_class_votes[party][c] = class_support;
+        }
+    }
+    for (var party of Q.parties) {
+        var support = 0;
+        for (var c of Q.classes) {
+            support += constituency.party_class_votes[party][c];
+        }
+        party_support[party] = support;
+        total_support += support;
+    }
+    constituency.party_support = party_support; // nyers, pártonkénti - az OEVK-számítás ezt használja lejjebb
+    constituency.total_support = total_support;
+    constituency.floating_votes = floating_votes;
+
+    // A LISTA (területi + kompenzáció) szempontjából a részvétel is számít: a teljes (lebegővel növelt)
+    // alapból számolunk %-ot, mert ott a tényleges részvétel arányosan visszaosztja a mandátumokat.
+    var full_pool = total_support + floating_votes;
+    constituency.party_vote_share = {};
+    for (var party of Q.parties) {
+        constituency.party_vote_share[party] = 100 * party_support[party] / full_pool;
+    }
+    constituency.floating_vote_share = 100 * floating_votes / full_pool;
+}
+
+// --- Független jelölt kapási rátája + OEVK-specifikus szavazatarány ---
+// Az OEVK-nál (relatív választás) a lebegő szavazattömeg NEM számít bele a nevezőbe - csak annyi, amennyit
+// a független ténylegesen elvisz belőle (capture_rate, körzetenként egyszer sorsolva, mindkét fordulóban
+// ugyanaz). Amit a független nem visz el, az az OEVK szempontjából egyszerűen nem számít - ellentétben a
+// listával (fent), ahol a teljes lebegő/részvétel mindig beleszámít, függetlenül attól, mennyit visz el belőle.
+for (var constituency of Q.oevk_constituencies) {
+    constituency.independent_capture_rate = (Q.independent_capture_rate_min +
+        Math.random() * (Q.independent_capture_rate_max - Q.independent_capture_rate_min)) / 100;
+
+    constituency.independent_r1_votes = constituency.floating_votes * constituency.independent_capture_rate;
+    var oevk_pool_r1 = constituency.total_support + constituency.independent_r1_votes;
+
+    constituency.oevk_vote_share = {};
+    for (var party of Q.parties) {
+        constituency.oevk_vote_share[party] = 100 * constituency.party_support[party] / oevk_pool_r1;
+    }
+    constituency.oevk_vote_share.independent = 100 * constituency.independent_r1_votes / oevk_pool_r1;
+}
+
+// --- Országos 4%-os küszöb ---
+// Csak a területi és a kompenzációs listás mandátumra vonatkozik - az OEVK-győzelmet nem érinti.
+// A párt országos listás szavazatátlaga (a körzeti party_vote_share átlaga) alapján dől el.
+Q.party_meets_threshold = {};
+for (var party of Q.parties) {
+    var national_total = 0;
+    for (var constituency of Q.oevk_constituencies) {
+        national_total += constituency.party_vote_share[party];
+    }
+    Q.party_meets_threshold[party] = (national_total / Q.oevk_constituencies.length) >= 4;
+}
+
+// --- OEVK 1. és 2. forduló, körzetenként ---
+// A jelöltek köre: Q.parties + a független ('independent'). A győzelmi %/mezőny mindenhol
+// constituency.oevk_vote_share-en alapul (ami már tartalmazza a független 1. fordulós elvitt részét,
+// de az el nem vitt lebegő maradékot nem - lásd fent).
+// 2. forduló mezőnye: top-3 UNIÓ mindenki, aki elérte a 15%-ot.
+// 2. fordulós újraelosztás elve ("demográfiai csúszás"): egy kieső párt egy adott osztályból (pl. munkások)
+// származó szavazatai ABBAN AZ OSZTÁLYBAN a legerősebb bennmaradó PÁRTRA mennek át (a független nem
+// vesz részt ebben az osztály-alapú átcsúszásban, mert nincs osztály-preferenciája). Amit a "nincs
+// második preferenciája" hányad miatt senki sem kap meg, az újra lebegővé válik - ebből a 2. fordulós
+// lebegőből a független (ha bejutott a 2. fordulóba) ugyanazzal a capture_rate-tel vihet el egy részt.
+var candidates = Q.parties.concat(['independent']);
+for (var constituency of Q.oevk_constituencies) {
+    var round1_winner = null;
+    for (var candidate of candidates) {
+        if (constituency.oevk_vote_share[candidate] > 50) {
+            round1_winner = candidate;
+        }
+    }
+
+    if (round1_winner) {
+        constituency.oevk_round = 1;
+        constituency.oevk_winner = round1_winner;
+    } else {
+        var by_votes = candidates.slice().sort(function (a, b) {
+            return constituency.oevk_vote_share[b] - constituency.oevk_vote_share[a];
+        });
+        var qualified = [];
+        for (var i = 0; i < by_votes.length; i++) {
+            if (i < 3 || constituency.oevk_vote_share[by_votes[i]] >= 15) {
+                qualified.push(by_votes[i]);
+            }
+        }
+        var qualified_parties = qualified.filter(function (candidate) {
+            return candidate !== 'independent';
+        });
+
+        var round2_totals = {};
+        for (var candidate of qualified) {
+            round2_totals[candidate] = 0;
+        }
+        if (qualified.indexOf('independent') !== -1) {
+            round2_totals.independent = constituency.independent_r1_votes;
+        }
+        for (var party of qualified_parties) {
+            for (var c of Q.classes) {
+                round2_totals[party] += constituency.party_class_votes[party][c];
+            }
+        }
+
+        var round2_floating_new = 0;
+        for (var party of Q.parties) {
+            if (qualified_parties.indexOf(party) === -1) {
+                for (var c of Q.classes) {
+                    var best_target = qualified_parties[0];
+                    for (var j = 1; j < qualified_parties.length; j++) {
+                        if (Q[c + '_' + qualified_parties[j] + '_normalized'] > Q[c + '_' + best_target + '_normalized']) {
+                            best_target = qualified_parties[j];
+                        }
+                    }
+                    var class_votes = constituency.party_class_votes[party][c];
+                    var transferable = class_votes * (1 - Q[c + '_no_transfer_rate']);
+                    round2_totals[best_target] += transferable;
+                    round2_floating_new += class_votes * Q[c + '_no_transfer_rate'];
+                }
+            }
+        }
+        if (qualified.indexOf('independent') !== -1) {
+            round2_totals.independent += round2_floating_new * constituency.independent_capture_rate;
+        }
+
+        var round2_winner = qualified[0];
+        for (var candidate of qualified) {
+            if (round2_totals[candidate] > round2_totals[round2_winner]) {
+                round2_winner = candidate;
+            }
+        }
+
+        constituency.oevk_round = 2;
+        constituency.oevk_round2_qualified = qualified;
+        constituency.oevk_winner = round2_winner;
+    }
+
+    if (constituency.oevk_winner === 'independent') {
+        Q.independent_oevk_seats += 1;
+    } else {
+        Q[constituency.oevk_winner + '_oevk_seats'] += 1;
+    }
+}
+
+// A kompenzációs lista alapja: (1) a vesztes OEVK-szavazatok (a győztesen kívül mindenki szavazata a
+// körzetben - a győztes "többletszavazatát" NEM számítjuk bele, mert 2 fordulós rendszerben nincs
+// egyértelműen definiált "szükséges" küszöb hozzá), (2) lejjebb kiegészül a területi lista fel nem
+// használt maradékával.
+Q.compensation_votes = {};
+for (var party of Q.parties) {
+    Q.compensation_votes[party] = 0;
+}
+for (var constituency of Q.oevk_constituencies) {
+    for (var party of Q.parties) {
+        if (party !== constituency.oevk_winner) {
+            Q.compensation_votes[party] += constituency.party_vote_share[party];
+        }
+    }
+}
+
+// --- Területi (megyei) lista, Hagenbach-Bischoff kvótával + kétharmados maradékszabály ---
+// Kvóta = megyei összes (lista-)szavazat / (megyei mandátumok száma + 1).
+// 1. lépés: pártonként floor(párt szavazat / kvóta) alapmandátum.
+// 2. lépés (maradékkezelés, kétharmados szabály): a floor() után betöltetlen helyekre csak az a párt
+//    pályázhat, amelynek maradéka (párt szavazat mod kvóta) eléri a kvóta legalább 2/3-át; ezek közül
+//    a legnagyobb maradékú párt(ok) kapják a fennmaradó helyeket, csökkenő maradék sorrendben.
+// Amit így sem lehet betölteni (nincs elég 2/3-ot elérő maradékú párt), az a kompenzációs listára csúszik
+// fel (lásd lejjebb) - innen a 152 csak "max" korlát.
+// A megyei szavazat egyelőre a megye OEVK-jainak party_vote_share összegéből jön (lista = egyéni szavazat, lásd fent).
+Q.territorial_seat_count = 0;
+for (var county in Q.county_1990_data) {
+    var seats = Q.county_1990_data[county].territorial_seats;
+    var county_votes = {};
+    var county_total = 0;
+    for (var party of Q.parties) {
+        county_votes[party] = 0;
+    }
+    for (var constituency of Q.oevk_constituencies) {
+        if (constituency.county === county) {
+            for (var party of Q.parties) {
+                county_votes[party] += constituency.party_vote_share[party];
+            }
+            county_total += 100;
+        }
+    }
+
+    var quota = county_total / (seats + 1);
+    var base_seats = {};
+    var remainders = {};
+    var seats_used = 0;
+    for (var party of Q.parties) {
+        // a küszöb alatti pártok NEM kaphatnak alapmandátumot, de a maradékukat (=teljes szavazatuk,
+        // hiszen base_seats itt mindig 0) a kompenzációs lista felé továbbra is el kell számolni lejjebb.
+        base_seats[party] = Q.party_meets_threshold[party] ? Math.floor(county_votes[party] / quota) : 0;
+        remainders[party] = county_votes[party] - base_seats[party] * quota;
+        seats_used += base_seats[party];
+    }
+
+    var leftover = seats - seats_used;
+    var eligible = Q.parties.filter(function (party) {
+        return Q.party_meets_threshold[party] && remainders[party] >= (2 / 3) * quota;
+    });
+    eligible.sort(function (a, b) {
+        return remainders[b] - remainders[a];
+    });
+    var bonus_seats = {};
+    for (var party of Q.parties) {
+        bonus_seats[party] = 0;
+    }
+    for (var i = 0; i < Math.min(leftover, eligible.length); i++) {
+        bonus_seats[eligible[i]] += 1;
+    }
+
+    // ami a maradékból nem váltott mandátumot (nem kapott bónusz helyet), az a kompenzációs listára megy.
+    // ha bónusz helyet kapott, a maradéka "elfogyott" érte (ez a kétharmados szabály kedvezménye).
+    for (var party of Q.parties) {
+        if (bonus_seats[party] === 0) {
+            Q.compensation_votes[party] += remainders[party];
+        }
+    }
+
+    var county_seats_total = 0;
+    for (var party of Q.parties) {
+        var won = base_seats[party] + bonus_seats[party];
+        Q[party + '_territorial_seats'] += won;
+        county_seats_total += won;
+    }
+    Q.territorial_seat_count += county_seats_total;
+}
+
+Q.compensation_seat_count = Q.total_seats_1990 - Q.oevk_seat_count - Q.territorial_seat_count;
+
+// --- Kompenzációs lista, D'Hondt módszerrel ---
+// Alap: Q.compensation_votes (vesztes OEVK-szavazatok + fel nem használt területi maradék).
+// Csak a 4%-os országos küszöböt elérő pártok kaphatnak kompenzációs mandátumot.
+for (var i = 0; i < Q.compensation_seat_count; i++) {
+    var best_party = null;
+    var best_quotient = -1;
+    for (var party of Q.parties) {
+        if (!Q.party_meets_threshold[party]) {
+            continue;
+        }
+        var quotient = Q.compensation_votes[party] / (Q[party + '_compensation_seats'] + 1);
+        if (quotient > best_quotient) {
+            best_quotient = quotient;
+            best_party = party;
+        }
+    }
+    if (best_party === null) {
+        break; // nincs küszöböt elérő párt - elméletileg nem fordulhat elő, de védekező ág
+    }
+    Q[best_party + '_compensation_seats'] += 1;
+}
+
+for (var party of Q.parties) {
+    Q[party + '_seats_1990'] = Q[party + '_oevk_seats'] + Q[party + '_territorial_seats'] + Q[party + '_compensation_seats'];
+}
+!}
+go-to: jumpScene
+
+# 1990-es 386 fős Országgyűlés: teljes számítási lánc (OEVK 1-2. forduló + független, területi lista, kompenzáció).
+# Sorrend: election_simulation_1990 -> oevk_1990_constituencies -> county_1990_data -> election_algorithm_1990 -> post_election_1990.

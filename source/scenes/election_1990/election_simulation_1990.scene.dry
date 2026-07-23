@@ -1,0 +1,52 @@
+title: 1990-es választási alapadatok
+on-arrival: {!
+Q.classes = ['workers', 'old_middle', 'new_middle', 'rural', 'unemployed', 'catholics'];
+Q.parties = ['spd', 'kpd', 'z', 'ddp', 'dvp', 'dnvp', 'nsdap', 'other'];
+
+// Osztályonkénti párt-preferencia (országos, körzetfüggetlen) - egyelőre PLACEHOLDER:
+// az 1928-as weimari alapszámok másolata, később cserélendő valós/kitalált magyar adatokra.
+Q.workers_spd = 65; Q.workers_kpd = 20; Q.workers_z = 5; Q.workers_ddp = 0; Q.workers_dvp = 0; Q.workers_dnvp = 5; Q.workers_nsdap = 0; Q.workers_other = 10;
+Q.old_middle_spd = 5; Q.old_middle_kpd = 0; Q.old_middle_z = 5; Q.old_middle_ddp = 10; Q.old_middle_dvp = 25; Q.old_middle_dnvp = 25; Q.old_middle_nsdap = 10; Q.old_middle_other = 10;
+Q.new_middle_spd = 5; Q.new_middle_kpd = 0; Q.new_middle_z = 10; Q.new_middle_ddp = 25; Q.new_middle_dvp = 25; Q.new_middle_dnvp = 10; Q.new_middle_nsdap = 5; Q.new_middle_other = 15;
+Q.rural_spd = 10; Q.rural_kpd = 0; Q.rural_z = 5; Q.rural_ddp = 5; Q.rural_dvp = 15; Q.rural_dnvp = 45; Q.rural_nsdap = 5; Q.rural_other = 10;
+Q.unemployed_spd = 25; Q.unemployed_kpd = 55; Q.unemployed_z = 1; Q.unemployed_ddp = 0; Q.unemployed_dvp = 0; Q.unemployed_dnvp = 5; Q.unemployed_nsdap = 15; Q.unemployed_other = 9;
+Q.catholics_spd = 15; Q.catholics_kpd = 5; Q.catholics_z = 50; Q.catholics_ddp = 0; Q.catholics_dvp = 5; Q.catholics_dnvp = 5; Q.catholics_nsdap = 0; Q.catholics_other = 10;
+
+// "Nem szavazók" osztályonként, két típus - mindkettő PLACEHOLDER (0), később töltendő fel:
+// - base_nonvoter_rate: az osztály hányada, akinek EGYÁLTALÁN nincs pártpreferenciája - ez a rész már
+//   az 1. fordulós alapszámításban sem megy egyik pártra sem, hanem "lebegő" szavazat marad
+//   (ebből meríthet majd a független jelölt).
+// - no_transfer_rate: a pártpreferenciával RENDELKEZŐ rész hányada, akinek nincs második preferenciája -
+//   ha az ő pártjuk kiesik a 2. fordulóból, ők NEM csúsznak át a legerősebb bennmaradó pártra, hanem
+//   szintén "lebegővé" válnak (ebből is meríthet majd a független jelölt).
+for (var c of Q.classes) {
+    Q[c + '_base_nonvoter_rate'] = 0;
+    Q[c + '_no_transfer_rate'] = 0;
+}
+!}
+go-to: oevk_1990_constituencies
+set-jump: post_election_1990
+
+@post_election_1990
+title: 1990-es választási eredmény
+
+**Mandátumok pártonként (OEVK / területi / kompenzáció / összesen):**
+
+{!<table>!}
+{!<tr><td>!}SPD{!</td><td>!}[+ spd_oevk_seats +]{!</td><td>!}[+ spd_territorial_seats +]{!</td><td>!}[+ spd_compensation_seats +]{!</td><td>!}**[+ spd_seats_1990 +]**{!</td></tr>!}
+{!<tr><td>!}KPD{!</td><td>!}[+ kpd_oevk_seats +]{!</td><td>!}[+ kpd_territorial_seats +]{!</td><td>!}[+ kpd_compensation_seats +]{!</td><td>!}**[+ kpd_seats_1990 +]**{!</td></tr>!}
+{!<tr><td>!}Z{!</td><td>!}[+ z_oevk_seats +]{!</td><td>!}[+ z_territorial_seats +]{!</td><td>!}[+ z_compensation_seats +]{!</td><td>!}**[+ z_seats_1990 +]**{!</td></tr>!}
+{!<tr><td>!}DDP{!</td><td>!}[+ ddp_oevk_seats +]{!</td><td>!}[+ ddp_territorial_seats +]{!</td><td>!}[+ ddp_compensation_seats +]{!</td><td>!}**[+ ddp_seats_1990 +]**{!</td></tr>!}
+{!<tr><td>!}DVP{!</td><td>!}[+ dvp_oevk_seats +]{!</td><td>!}[+ dvp_territorial_seats +]{!</td><td>!}[+ dvp_compensation_seats +]{!</td><td>!}**[+ dvp_seats_1990 +]**{!</td></tr>!}
+{!<tr><td>!}DNVP{!</td><td>!}[+ dnvp_oevk_seats +]{!</td><td>!}[+ dnvp_territorial_seats +]{!</td><td>!}[+ dnvp_compensation_seats +]{!</td><td>!}**[+ dnvp_seats_1990 +]**{!</td></tr>!}
+{!<tr><td>!}NSDAP{!</td><td>!}[+ nsdap_oevk_seats +]{!</td><td>!}[+ nsdap_territorial_seats +]{!</td><td>!}[+ nsdap_compensation_seats +]{!</td><td>!}**[+ nsdap_seats_1990 +]**{!</td></tr>!}
+{!<tr><td>!}Other{!</td><td>!}[+ other_oevk_seats +]{!</td><td>!}[+ other_territorial_seats +]{!</td><td>!}[+ other_compensation_seats +]{!</td><td>!}**[+ other_seats_1990 +]**{!</td></tr>!}
+{!<tr><td>!}Független{!</td><td>!}[+ independent_oevk_seats +]{!</td><td>!}-{!</td><td>!}-{!</td><td>!}**[+ independent_oevk_seats +]**{!</td></tr>!}
+{!</table>!}
+
+Összesen 386 mandátum: 176 OEVK + [+ territorial_seat_count +] területi (max 152) + [+ compensation_seat_count +] kompenzációs.
+
+- @root.start_menu_2: Vissza a főmenübe
+
+# Előfeltétele az election_algorithm_1990 és az oevk_1990_constituencies számításainak.
+# Sorrend: election_simulation_1990 -> oevk_1990_constituencies -> county_1990_data -> election_algorithm_1990 -> post_election_1990.

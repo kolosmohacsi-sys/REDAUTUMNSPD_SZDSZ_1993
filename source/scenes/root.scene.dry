@@ -12,6 +12,7 @@ go-to: start_menu_2
 
 - @start: Start game
 - @election_simulation: Election simulation
+- @election_simulation_1990: 1990-es választási szimuláció
 - @credits: Credits
 - @game_over.achievements
 

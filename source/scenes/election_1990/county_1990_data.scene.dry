@@ -1,0 +1,31 @@
+title: 1990-es megyei adatok
+on-arrival: {!
+// Valós 1990-es törvényi adatok megyénként (nem placeholder):
+// - oevk_count: egyéni választókerületek száma a megyében
+// - territorial_seats: a megyei területi lista mandátumainak száma (összesen 152)
+Q.county_1990_data = {
+    "Budapest":                { oevk_count: 32, territorial_seats: 28 },
+    "Baranya":                 { oevk_count: 7,  territorial_seats: 6 },
+    "Bács-Kiskun":             { oevk_count: 10, territorial_seats: 8 },
+    "Békés":                   { oevk_count: 7,  territorial_seats: 6 },
+    "Borsod-Abaúj-Zemplén":    { oevk_count: 13, territorial_seats: 11 },
+    "Csongrád":                { oevk_count: 7,  territorial_seats: 6 },
+    "Fejér":                   { oevk_count: 7,  territorial_seats: 6 },
+    "Győr-Moson-Sopron":       { oevk_count: 7,  territorial_seats: 6 },
+    "Hajdú-Bihar":             { oevk_count: 9,  territorial_seats: 8 },
+    "Heves":                   { oevk_count: 6,  territorial_seats: 5 },
+    "Jász-Nagykun-Szolnok":    { oevk_count: 8,  territorial_seats: 6 },
+    "Komárom-Esztergom":       { oevk_count: 5,  territorial_seats: 5 },
+    "Nógrád":                  { oevk_count: 4,  territorial_seats: 4 },
+    "Pest":                    { oevk_count: 16, territorial_seats: 14 },
+    "Somogy":                  { oevk_count: 6,  territorial_seats: 5 },
+    "Szabolcs-Szatmár-Bereg":  { oevk_count: 10, territorial_seats: 9 },
+    "Tolna":                   { oevk_count: 5,  territorial_seats: 4 },
+    "Vas":                     { oevk_count: 5,  territorial_seats: 4 },
+    "Veszprém":                { oevk_count: 7,  territorial_seats: 6 },
+    "Zala":                    { oevk_count: 5,  territorial_seats: 5 },
+};
+!}
+go-to: election_algorithm_1990
+
+# Sorrend: election_simulation_1990 -> oevk_1990_constituencies -> county_1990_data -> election_algorithm_1990.
