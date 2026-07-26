@@ -1,58 +1,114 @@
 title: Election
 on-arrival: {!
-// calculate normalized class voting amounts (0 to 100)
-for (var c of Q.classes) {
-    var class_votes = 0;
-    for (var party of Q.parties) {
-        if (Q[c+'_'+party] < 0) {
-            Q[c+'_'+party] = 0;
+Q.oevkgain = {};
+Q.reggain = {};
+for (var p of Q.parties) {
+    Q.oevkgain[p] = 0;
+    Q.reggain[p] = 0;
+}
+
+for (var c1 of Q.OEVK) {
+    c1.support = {};
+    for (var c2 of Q.parties) {
+        c1.support[c2] = 0;
+        for (var c3 of Q.classes) {
+            c1.support[c2] += Q[c3 + "_" + c2] * c1.classes[c3];
         }
-        class_votes += Q[c+'_'+party];
-    }
-    for (var party of Q.parties) {
-        Q[c + '_' + party + '_normalized'] = 100*Q[c+'_'+party]/class_votes;
-        Q[c + '_' + party + '_display'] = Math.round(100*Q[c+'_'+party]/class_votes);
     }
 }
 
-// 1. calculate support for each of the parties
-var total_support = 0;
-for (var party of Q.parties) {
-    var party_support = 0;
-    for (var c of Q.classes) {
-        // but this version is somewhat more entertaining and allows for wilder swings in votes.
-        // the other option basically necessitates a multi-class strategy. while the first option allows for a working-class-only strategy.
-        if (Q.old_demographics) {
-            // okay i'm pretty sure this is wrong, and the hard version is correct
-            // basically this allows for "spillover" effects in other demographics.
-            // so you can campaign among say the workers and 
-            party_support += Q[c]*Q[c+'_'+party];
-            // However, there should be a cap on how much party support you can get in a certain demo.
-        } else  {
-            party_support += Q[c]*Q[c+'_'+party+'_normalized'];
+for (var r1 of Q.Region) {
+    r1.support = {};
+    for (var r2 of Q.parties) {
+        r1.support[r2] = 0;
+        for (var r3 of Q.OEVK) {
+            if (r3.region == r1.id) {
+                r1.support[r2] += r3.support[r2];
+            }
         }
     }
-    Q[party + '_support'] = party_support;
-    total_support += party_support;
 }
-// 2. normalize support (fraction)
-// 3. Round to integers
-// TODO: round to 1 decimal instead of rounding to integers
-// to do that, we multiply party_normalized*1000 and divide the rounded number by 10.
-for (var party of Q.parties) {
-    Q[party+'_normalized'] = Q[party + '_support']/total_support;
-    Q[party+'_votes_dec'] = Math.round(Q[party+'_normalized']*1000)/10;
-    if (Q.use_decimals) {
-        Q[party+'_votes'] = Q[party+'_votes_dec'];
-        Q[party + '_votes_disp'] = Q[party+'_votes'];
-    } else {
-        Q[party+'_votes'] = Math.round(Q[party+'_normalized']*100);
-        Q[party + '_votes_disp'] = Q[party+'_votes_dec'].toFixed(1);
+
+for (var c1 of Q.OEVK) {
+    var maxValue = -Infinity;
+    var maxParty = null;
+    for (var c2 of Q.parties) {
+        if (c1.support[c2] > maxValue) {
+            maxValue = c1.support[c2];
+            maxParty = c2;
+        }
     }
-    //Q[party+'_votes'] = Q[party+'_votes_dec'];
-    // display
+    c1.winner = maxParty;
+    c1.winner_value = maxValue;
+    Q.oevkgain[maxParty] += 1;
+}
+
+for (var c1 of Q.OEVK) {
+    c1.comp = {};
+    for (var c2 of Q.parties) {
+        c1.comp[c2] = (c1.winner == c2) ? 0 : c1.support[c2];
+    }
+}
+
+for (var d1 of Q.Region) {
+    d1.total = 0;
+    for (var d2 of Q.parties) {
+        d1.total += d1.support[d2];
+    }
+    d1.cutoff = d1.total / (d1.mandates + 1);
+}
+
+for (var f1 of Q.Region) {
+    f1.gain = {};
+    f1.comp = {};
+    for (var f2 of Q.parties) {
+        f1.gain[f2] = Math.floor(f1.support[f2] / f1.cutoff);
+        Q.reggain[f2] += f1.gain[f2];
+        f1.comp[f2] = f1.support[f2] - f1.gain[f2] * f1.cutoff;
+    }
+}
+
+Q.comp = {};
+for (var c1 of Q.parties) {
+    Q.comp[c1] = 0;
+    for (var c2 of Q.OEVK) {
+        Q.comp[c1] += c2.comp[c1];
+    }
+    for (var c3 of Q.Region) {
+        Q.comp[c1] += c3.comp[c1];
+    }
+}
+
+Q.Natmand = 210;
+for (var c1 of Q.Region) {
+    for (var c2 of Q.parties) {
+        Q.Natmand -= c1.gain[c2];
+    }
+}
+
+Q.natgain = {};
+for (var p1 of Q.parties) Q.natgain[p1] = 0;
+
+for (var i = 0; i < Q.Natmand; i++) {
+    var bestParty = null;
+    var bestQuotient = -1;
+    for (var p2 of Q.parties) {
+        var quotient = Q.comp[p2] / (Q.natgain[p2] + 1);
+        if (quotient > bestQuotient) {
+            bestQuotient = quotient;
+            bestParty = p2;
+        }
+    }
+    Q.natgain[bestParty] += 1;
+}
+
+Q.seats = {};
+for (var p of Q.parties) {
+    Q.seats[p] = Q.oevkgain[p] + Q.reggain[p] + Q.natgain[p];
+}
+for (var p of Q.parties) {
+    Q[p + "_r"] = Q.seats[p] / 3.86;
 }
 !}
-go-to: jumpScene
 
-# note: this is a helpful utility to deal with elections and so on.
+go-to: jumpScene
