@@ -206,19 +206,19 @@ data = data.concat([
         "id": "other",
         "legend": "Other",
         "name": "Other",
-        "seats": Q.seats["other],
+        "seats": Q.seats["other"],
     },
     {
         "id": "dnvp",
         "legend": "DNVP",
         "name": "DNVP",
-        "seats": Q.seats["DNVP"],
+        "seats": Q.seats["dnvp"],
     },
     {
         "id": "nsdap",
         "legend": "NSDAP",
         "name": "NSDAP",
-        "seats": Q.seats["nssdap"],
+        "seats": Q.seats["nsdap"],
     },
 ]);
 
