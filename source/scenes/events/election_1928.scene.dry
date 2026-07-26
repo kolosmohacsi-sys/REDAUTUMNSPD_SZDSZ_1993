@@ -191,10 +191,10 @@ data = data.concat([
         "seats": Q.seats["z"],
     },
     {
-        "id": "bvp",
-        "legend": "BVP",
-        "name": "BVP",
-        "seats": Q.seats["bvp"],
+        "id": "dvp",
+        "legend": "DVP",
+        "name": "DVP",
+        "seats": Q.seats["dvp"],
     },
     {
         "id": "other",
