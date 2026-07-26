@@ -240,8 +240,7 @@ for (var d of Q.OEVK) {
     var winnerName = d.winner ? Q.party_names[d.winner] : 'ismeretlen';
     mapSvg += '<path class="oevk-district" fill="' + color + '" d="' + Q.oevk_paths[d.id] + '">';
     mapSvg += '<title>' + d.id + ' — ' + winnerName + '</title>';
-    </path>;
-
+    mapSvg += '</path>';
 }
 mapSvg += '</svg>';
 document.getElementById('oevk-map-container').innerHTML = mapSvg;
