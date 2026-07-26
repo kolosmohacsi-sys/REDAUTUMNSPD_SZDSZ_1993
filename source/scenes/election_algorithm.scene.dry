@@ -110,5 +110,4 @@ for (var p of Q.parties) {
     Q[p + "_r"] = Q.seats[p] / 3.86;
 }
 !}
-
 go-to: jumpScene
