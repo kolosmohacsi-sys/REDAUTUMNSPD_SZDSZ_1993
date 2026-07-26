@@ -245,8 +245,8 @@ for (var d of Q.OEVK) {
 mapSvg += '</svg>';
 document.getElementById('oevk-map-container').innerHTML = mapSvg;
 
-var mandateHtml = '<tr><td rowspan="2">Párt</td><td colspan="3">Mandátumok</td></tr>';
-mandateHtml += '<tr><td>Egyéni</td><td>Területi</td><td>Országos</td></tr>';
+var mandateHtml = '<tr><td rowspan="2">Party</td><td colspan="3">Mandates Won</td></tr>';
+mandateHtml += '<tr><td>Individual</td><td>Regional</td><td>National</td></tr>';
 for (var p of Q.parties) {
     mandateHtml += '<tr>';
     mandateHtml += '<td><div class="box" style="background-color:' + Q.party_colors[p] + '"></div> ' + Q.party_names[p] + '</td>';
@@ -260,11 +260,17 @@ document.getElementById('mandate-table').innerHTML = mandateHtml;
 go-to: coalition_menu
 
 = Election results
+
 = Parlaiment Composition
+
 {!<svg id="reichstag" style="width: 500px; height: 250px;"> </svg>!}
+
 =Individual Constituency Winners
+
 {!<div id="oevk-map-container"></div>!}
+
 = Key Statistics
+
 {!<table id="mandate-table" style="width:100%;"></table>!}
 
 **Potential coalitions:**
