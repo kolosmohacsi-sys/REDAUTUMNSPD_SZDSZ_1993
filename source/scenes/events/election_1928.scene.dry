@@ -233,7 +233,6 @@ if (window && d3) {
     d3.select("#reichstag").datum(data).call(parliament);
 }
 
-
 var mapSvg = '<svg viewBox="' + Q.oevk_map_viewbox + '" style="width:100%; height:auto;">';
 mapSvg += '<style>.oevk-district { stroke: #fff; stroke-width: 0.3; }</style>';
 for (var d of Q.OEVK) {
@@ -243,13 +242,12 @@ for (var d of Q.OEVK) {
 mapSvg += '</svg>';
 document.getElementById('oevk-map-container').innerHTML = mapSvg;
 !}
-
 go-to: coalition_menu
 
 = Election results
 
 {!<svg id="reichstag" style="width: 500px; height: 250px;"> </svg>!}
-
+{!<div id="oevk-map-container"></div>!}
 {!<table>!} 
 {!<tr><td>Party</td><td>Vote share</td><td>% Change</td></tr>!}
 {!<tr><td><div class="box" style='background-color:#E3000F; outline: 2px; outline-style: solid;'> </div> !} **SPD:** {!</td><td>!} **[+ spd_r +]%** {!</td><td>!} **[+ str_change_spd +]** {!</td></tr>!}
