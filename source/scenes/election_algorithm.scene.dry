@@ -1,11 +1,17 @@
 title: Election
 on-arrival: {!
+
 Q.oevkgain = {};
 Q.reggain = {};
+Q.totalpref = {};
+
 for (var p of Q.parties) {
     Q.oevkgain[p] = 0;
     Q.reggain[p] = 0;
+    Q.totalpref[p] = 0;
 }
+
+//Calculate Party Preferences in each Individual Constituency (OEVK)
 
 for (var c1 of Q.OEVK) {
     c1.support = {};
@@ -17,6 +23,7 @@ for (var c1 of Q.OEVK) {
     }
 }
 
+//Aggregate Party Preferences for each Electoral Region
 for (var r1 of Q.Region) {
     r1.support = {};
     for (var r2 of Q.parties) {
@@ -28,6 +35,26 @@ for (var r1 of Q.Region) {
         }
     }
 }
+
+//Aggregate Party Preferences for the National Level
+
+Q.allvoters = 0;
+Q.nattreshhold = {};
+
+for (var c1 of Q.parties){
+    for (c2 of Q.Region){
+        Q.allvoters += c2.support[c1]
+        Q.totalpref[c1] += c2.support[c1]
+    }
+}
+
+//Check if a party exeecd the 4% national treshold
+
+for (var c1 of Q.parties){
+    Q.nattreshhold[c1] = Q.totalpref[c1] / Q.allvoters * 100 > 4
+}
+
+//Decide which party wins each Individual consituency
 
 for (var c1 of Q.OEVK) {
     var maxValue = -Infinity;
@@ -43,12 +70,17 @@ for (var c1 of Q.OEVK) {
     Q.oevkgain[maxParty] += 1;
 }
 
+//Check if the party eligible compensatory votes in OEVKs
+
 for (var c1 of Q.OEVK) {
     c1.comp = {};
     for (var c2 of Q.parties) {
         c1.comp[c2] = (c1.winner == c2) ? 0 : c1.support[c2];
+        c1.comp[c2] = (Q.nattreshhold[c2]) ? c1.comp[c2] : 0; 
     }
 }
+
+//Calculate the Hagenbach-Bischoff formula qoutas for each region
 
 for (var d1 of Q.Region) {
     d1.total = 0;
@@ -58,15 +90,19 @@ for (var d1 of Q.Region) {
     d1.cutoff = d1.total / (d1.mandates + 1);
 }
 
+//Calculate the Hagenbach-Bischoff mandates, with filtering which parties are eligible for it
+
 for (var f1 of Q.Region) {
     f1.gain = {};
     f1.comp = {};
     for (var f2 of Q.parties) {
-        f1.gain[f2] = Math.floor(f1.support[f2] / f1.cutoff);
+        f1.gain[f2] = (Q.nattreshhold[f2]) ? Math.floor(f1.support[f2] / f1.cutoff) : 0;
         Q.reggain[f2] += f1.gain[f2];
-        f1.comp[f2] = f1.support[f2] - f1.gain[f2] * f1.cutoff;
+        f1.comp[f2] = (Q.nattreshhold[f2]) ? f1.support[f2] - f1.gain[f2] * f1.cutoff : 0;
     }
 }
+
+//Calculate compensatory votes for each party (note: non-eligible parties technically participate in these votings, but with 0 votes)
 
 Q.comp = {};
 for (var c1 of Q.parties) {
@@ -79,12 +115,16 @@ for (var c1 of Q.parties) {
     }
 }
 
+//Calculate how many mandates should be given out through National Compensatory mandates
+
 Q.Natmand = 210;
 for (var c1 of Q.Region) {
     for (var c2 of Q.parties) {
         Q.Natmand -= c1.gain[c2];
     }
 }
+
+//Iterate a D'hont formula to distriubte the mandates
 
 Q.natgain = {};
 for (var p1 of Q.parties) Q.natgain[p1] = 0;
@@ -102,12 +142,17 @@ for (var i = 0; i < Q.Natmand; i++) {
     Q.natgain[bestParty] += 1;
 }
 
+//Saves seats to return the exact formula for the parlaiment
+
 Q.seats = {};
 for (var p of Q.parties) {
     Q.seats[p] = Q.oevkgain[p] + Q.reggain[p] + Q.natgain[p];
 }
+
+//Round parlament proportions for aesthetic reasons
+
 for (var p of Q.parties) {
-    Q[p + "_r"] = (Q.seats[p] / 3.86).toFixed(2);
+    Q[p + "_r"] = Math.round((Q.seats[p] / 3.86)*100)/100;
 }
 !}
 go-to: jumpScene

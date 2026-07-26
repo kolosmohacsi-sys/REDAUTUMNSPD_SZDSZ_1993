@@ -233,6 +233,17 @@ Q.new_middle_qol = 100;
 Q.classes = ['workers', 'old_middle', 'new_middle', 'rural', 'unemployed', 'catholics'];
 Q.parties = ['spd', 'kpd', 'z', 'ddp', 'dvp', 'dnvp', 'nsdap', 'other'];
 
+Q.party_names = {
+    spd: 'SPD', z: 'Z', kpd: 'KPD', ddp: 'DDP',
+    dvp: 'DVP', dnvp: 'DNVP', nsdap: 'NSDAP', other: 'Other'
+};
+
+Q.party_colors = {
+    spd: '#E3000F', z: '#000', kpd: '#8B0000', ddp: '#DCCA4A',
+    dvp: '#D5AC27', dnvp: '#3f7bc1', nsdap: '#954B00', other: '#a0a0a0'
+};
+
+
 // TODO: add 'sapd' later on
 Q.sapd_formed = 0;
 
