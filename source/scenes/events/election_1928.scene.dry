@@ -213,7 +213,7 @@ data = data.concat([
         "legend": "NSDAP",
         "name": "NSDAP",
         "seats": Q.seats["nsdap"],
-    },
+    }
 ]);
 
 if (window && d3) {
