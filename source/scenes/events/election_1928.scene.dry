@@ -237,7 +237,11 @@ var mapSvg = '<svg viewBox="' + Q.oevk_map_viewbox + '" style="width:100%; heigh
 mapSvg += '<style>.oevk-district { stroke: #000; stroke-width: 0.4; }</style>';
 for (var d of Q.OEVK) {
     var color = d.winner ? Q.party_colors[d.winner] : '#cccccc';
-    mapSvg += '<path class="oevk-district" fill="' + color + '" d="' + Q.oevk_paths[d.id] + '"></path>';
+    var winnerName = d.winner ? Q.party_names[d.winner] : 'ismeretlen';
+    mapSvg += '<path class="oevk-district" fill="' + color + '" d="' + Q.oevk_paths[d.id] + '">';
+    mapSvg += '<title>' + d.id + ' — ' + winnerName + '</title>';
+    </path>;
+
 }
 mapSvg += '</svg>';
 document.getElementById('oevk-map-container').innerHTML = mapSvg;
