@@ -107,7 +107,7 @@ for (var p of Q.parties) {
     Q.seats[p] = Q.oevkgain[p] + Q.reggain[p] + Q.natgain[p];
 }
 for (var p of Q.parties) {
-    Q[p + "_r"] = Q.seats[p] / 3.86;
+    Q[p + "_r"] = (Q.seats[p] / 3.86).toFixed(2);
 }
 !}
 go-to: jumpScene
