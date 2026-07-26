@@ -155,66 +155,17 @@ Q.election_records.push(election_result);
 !}
 on-departure: nazi_urgency = 1 if (nazi_urgency == 0 and nsdap_r >= 15)
 on-display: {!
-data = [
-    {
-        "id": "kpd",
-        "legend": "KPD",
-        "name": "KPD",
-        "seats": Q.seats["kpd"],
-    }
-];
-if (Q.sapd_formed && Q.sapd_r) {
+
+data = [];
+for (var p of Q.parliament_order) {
     data.push({
-            "id": "sapd",
-            "legend": "SAPD",
-            "name": "SAPD",
-            "seats": Q.seats["sapd"],
-            });
+        "id": p,
+        "legend": Q.party_names[p],
+        "name": Q.party_names[p],
+        "seats": Q.seats[p],
+        "color": Q.party_colors[p]
+    });
 }
-data = data.concat([
-    {
-        "id": "spd",
-        "legend": "SPD",
-        "name": "SPD",
-        "seats": Q.seats["spd"],
-    },
-    {
-        "id": "ddp",
-        "legend": Q.ddp_name,
-        "name": Q.ddp_name,
-        "seats": Q.seats["ddp"],
-    },
-    {
-        "id": "z",
-        "legend": "Center",
-        "name": "Center",
-        "seats": Q.seats["z"],
-    },
-    {
-        "id": "dvp",
-        "legend": "DVP",
-        "name": "DVP",
-        "seats": Q.seats["dvp"],
-    },
-    {
-        "id": "other",
-        "legend": "Other",
-        "name": "Other",
-        "seats": Q.seats["other"],
-    },
-    {
-        "id": "dnvp",
-        "legend": "DNVP",
-        "name": "DNVP",
-        "seats": Q.seats["dnvp"],
-    },
-    {
-        "id": "nsdap",
-        "legend": "NSDAP",
-        "name": "NSDAP",
-        "seats": Q.seats["nsdap"],
-    }
-]);
 
 if (window && d3) {
     var width = 500; 

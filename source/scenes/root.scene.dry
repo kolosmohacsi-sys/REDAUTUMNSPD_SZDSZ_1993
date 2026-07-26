@@ -236,6 +236,8 @@ Q.new_middle_qol = 100;
 
 Q.classes = ['workers', 'old_middle', 'new_middle', 'rural', 'unemployed', 'catholics'];
 Q.parties = ['spd', 'kpd', 'z', 'ddp', 'dvp', 'dnvp', 'nsdap', 'other'];
+Q.parliament_order = ['kpd', 'spd', 'ddp', 'z', 'dvp', 'other', 'dnvp', 'nsdap'];
+
 
 Q.party_names = {
     spd: 'SZDSZ', z: 'KDNP', kpd: 'MSZP', ddp: 'Fidesz',
