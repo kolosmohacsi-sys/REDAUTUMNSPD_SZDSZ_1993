@@ -1,6 +1,23 @@
 title: Election
 on-arrival: {!
 
+Q.transit = {};
+
+for (var c1 of Q.classes){
+    Q.transit[c1] = {};
+    for (var c2 of Q.parties){
+        Q.transit[c1][c2] = {};
+        for (var c3 of Q.parties){
+            if (c2 == c3){
+                Q.transit[c1][c2][c3] = 1;
+            }else{
+                Q.transit[c1][c2][c3] = Q[c1 + "_" + c3] / (100 - Q[c1 + "_" + c2]);
+            }
+        }
+    }
+}
+
+
 Q.oevkgain = {};
 Q.reggain = {};
 Q.totalpref = {};
@@ -18,7 +35,7 @@ for (var c1 of Q.OEVK) {
     for (var c2 of Q.parties) {
         c1.support[c2] = 0;
         for (var c3 of Q.classes) {
-            c1.support[c2] += Q[c3 + "_" + c2] * c1.classes[c3];
+            c1.support[c2] += Q[c3 + "_" + c2]/100 * c1.classes[c3];
         }
     }
 }
@@ -56,18 +73,75 @@ for (var c1 of Q.parties){
 
 //Decide which party wins each Individual consituency
 
+//Checking first rounds
+
 for (var c1 of Q.OEVK) {
-    var maxValue = -Infinity;
-    var maxParty = null;
     for (var c2 of Q.parties) {
-        if (c1.support[c2] > maxValue) {
-            maxValue = c1.support[c2];
-            maxParty = c2;
+        if (c1.support[c2] > 50) {
+            c1.round = "first";
+            c1.winner = c2;
+            Q.oevkgain[c2] += 1;
         }
     }
-    c1.winner = maxParty;
-    c1.winner_value = maxValue;
-    Q.oevkgain[maxParty] += 1;
+    if (typeof c1.winner === "undefined"){
+        c1.round = "second";
+    }
+}
+
+//checking second rounds
+
+for (var c1 of Q.OEVK) {
+    if (c1.round == "second") {
+        c1.qualify = {};
+        var qualifyCount = 0;
+        for (var c2 of Q.parties) {
+            c1.qualify[c2] = c1.support[c2] > 15;
+            if (c1.qualify[c2]) qualifyCount++;
+        }
+
+        if (qualifyCount < 3) {
+            for (var c2 of Q.parties) {
+                var betterCount = 0;
+                for (var other of Q.parties) {
+                    if (c1.support[other] > c1.support[c2]) betterCount++;
+                }
+                c1.qualify[c2] = betterCount < 3;
+            }
+        }
+    }
+}
+
+for (var c1 of Q.OEVK) {
+    if (c1.round == "second") {
+        c1.support_r2 = {};
+        for (var c2 of Q.parties) {
+            c1.support_r2[c2] = c1.support[c2];
+        }
+        for (var c3 of Q.parties) {
+            if (c1.qualify[c3]) continue;
+            for (var c4 of Q.classes) {
+                var c3_votes_in_class = (Q[c4 + "_" + c3] / 100) * c1.classes[c4];
+                for (var c2 of Q.parties) {
+                    if (!c1.qualify[c2]) continue;  // csak a bejutott jeloltek kapjak
+                    c1.support_r2[c2] += c3_votes_in_class * Q.transit[c4][c3][c2];
+                }
+            }
+        }
+    }
+}
+
+for (var c1 of Q.OEVK) {
+    if (c1.round == "second") {
+        var maxV = -Infinity, maxP = null;
+        for (var c2 of Q.parties) {
+            if (c1.qualify[c2] && c1.support_r2[c2] > maxV) {
+                maxV = c1.support_r2[c2];
+                maxP = c2;
+            }
+        }
+        c1.winner = maxP;
+        Q.oevkgain[maxP] += 1;
+    }
 }
 
 //Check if the party eligible compensatory votes in OEVKs
