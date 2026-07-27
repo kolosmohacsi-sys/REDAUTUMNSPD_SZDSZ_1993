@@ -196,6 +196,42 @@ for (var d of Q.OEVK) {
 mapSvg += '</svg>';
 document.getElementById('oevk-map-container').innerHTML = mapSvg;
 
+function drawDotCluster(cx, cy, counts, dotRadius, spacing) {
+    var dots = [];
+    for (var p of Q.parliament_order) {
+        var n = counts[p] || 0;
+        for (var i = 0; i < n; i++) dots.push(p);
+    }
+    var total = dots.length;
+    if (total === 0) return '';
+    var cols = Math.ceil(Math.sqrt(total));
+    var rows = Math.ceil(total / cols);
+    var startX = cx - (cols - 1) * spacing / 2;
+    var startY = cy - (rows - 1) * spacing / 2;
+    var svg = '';
+    for (var i = 0; i < total; i++) {
+        var col = i % cols;
+        var row = Math.floor(i / cols);
+        var x = startX + col * spacing;
+        var y = startY + row * spacing;
+        svg += '<circle cx="' + x + '" cy="' + y + '" r="' + dotRadius + '" fill="' + Q.party_colors[dots[i]] + '" stroke="#000" stroke-width="0.2"></circle>';
+    }
+    return svg;
+}
+
+var mapSvg2 = '<svg viewBox="' + Q.region_map_viewbox + '" style="width:100%; height:auto;">';
+mapSvg2 += '<style>.region-outline { stroke: #999; stroke-width: 0.6; fill: #e8e8e8; }</style>';
+for (var regionId in Q.region_paths) {
+    mapSvg2 += '<path class="region-outline" d="' + Q.region_paths[regionId] + '"></path>';
+}
+for (var r of Q.Region) {
+    var center = Q.region_centroids[r.id];
+    if (!center) continue;
+    mapSvg2 += drawDotCluster(center[0], center[1], r.gain, 2.2, 5);
+}
+mapSvg2 += '</svg>';
+document.getElementById('region-map-container').innerHTML = mapSvg2;
+
 var mandateHtml = '<tr><td rowspan="2">Party</td><td colspan="3">Mandates Won</td></tr>';
 mandateHtml += '<tr><td>Individual</td><td>Regional</td><td>National</td></tr>';
 for (var p of Q.parties) {
@@ -220,9 +256,14 @@ go-to: coalition_menu
 
 {!<div id="oevk-map-container"></div>!}
 
+=Regional Mandates
+
+{!<div id="region-map-container"></div>!}
+
 = Key Statistics
 
 {!<table id="mandate-table" style="width:100%;"></table>!}
+
 
 **Potential coalitions:**
 
