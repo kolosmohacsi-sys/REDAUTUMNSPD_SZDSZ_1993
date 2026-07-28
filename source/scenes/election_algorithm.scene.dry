@@ -17,7 +17,6 @@ for (var c1 of Q.classes){
     }
 }
 
-
 Q.oevkgain = {};
 Q.reggain = {};
 Q.totalpref = {};
@@ -28,29 +27,37 @@ for (var p of Q.parties) {
     Q.totalpref[p] = 0;
 }
 
-//Calculate Party Preferences in each Individual Constituency (OEVK)
+//We assume all OEVKs have 45 000 voters, so we calculate 176 * 45000
 
+Q.eligible = 7920000
+
+//Calculate Party Preferences in each Individual Constituency (OEVK)
 for (var c1 of Q.OEVK) {
     c1.support = {};
     for (var c2 of Q.parties) {
         c1.support[c2] = 0;
         for (var c3 of Q.classes) {
-            c1.support[c2] += Q[c3 + "_" + c2]/100 * c1.classes[c3];
+            c1.support[c2] += Q[c3 + "_" + c2]/100 * c1.classes[c3]/100;
         }
+        c1.support[c2] = c1.support[c2] * 45000;
     }
+    c1.allvoters = 45000 - c1.support['abstain'];
 }
 
 //Aggregate Party Preferences for each Electoral Region
 for (var r1 of Q.Region) {
     r1.support = {};
+    r1.allvoters = 0;
     for (var r2 of Q.parties) {
         r1.support[r2] = 0;
         for (var r3 of Q.OEVK) {
             if (r3.region == r1.id) {
                 r1.support[r2] += r3.support[r2];
+                r1.allvoters += r3.support[r2]
             }
         }
-    }
+    } 
+    r1.allvoters = r1.allvoters - r1.support['abstain'];
 }
 
 //Aggregate Party Preferences for the National Level
@@ -60,15 +67,17 @@ Q.nattreshhold = {};
 
 for (var c1 of Q.parties){
     for (c2 of Q.Region){
-        Q.allvoters += c2.support[c1]
-        Q.totalpref[c1] += c2.support[c1]
+        if(c2){
+            Q.totalpref[c1] += c2.support[c1]
+        }
     }
+    Q.allvoters = Q.eligible - Q.totalpref['abstain'];
 }
 
 //Check if a party exeecd the 4% national treshold
 
 for (var c1 of Q.parties){
-    Q.nattreshhold[c1] = Q.totalpref[c1] / Q.allvoters * 100 > 4
+    Q.nattreshhold[c1] = Q.totalpref[c1] / Q.allvoters * 100 > 4 && c1 != 'abstain';
 }
 
 //Decide which party wins each Individual consituency
@@ -76,11 +85,14 @@ for (var c1 of Q.parties){
 //Checking first rounds
 
 for (var c1 of Q.OEVK) {
-    for (var c2 of Q.parties) {
-        if (c1.support[c2] > 50) {
-            c1.round = "first";
-            c1.winner = c2;
-            Q.oevkgain[c2] += 1;
+    if(c1.support['abstain'] < 22500){
+        for (var c2 of Q.parties) {
+            if (c1.support[c2] > c1.allvoters*0.5 && c2!="abstain") {
+                c1.round = "first";
+                c1.winner = c2;
+                c1.winrate = c1.support[c2]/c1.allvoters;
+                Q.oevkgain[c2] += 1;
+            }
         }
     }
     if (typeof c1.winner === "undefined"){
@@ -95,14 +107,19 @@ for (var c1 of Q.OEVK) {
         c1.qualify = {};
         var qualifyCount = 0;
         for (var c2 of Q.parties) {
-            c1.qualify[c2] = c1.support[c2] > 15;
-            if (c1.qualify[c2]) qualifyCount++;
+            if (c2 != "abstain"){
+                c1.qualify[c2] = c1.support[c2] > c1.allvoters*0.15;
+                if (c1.qualify[c2]) qualifyCount++;
+            }else{
+                c1.qualify[c2] = true;
+            }
         }
-
         if (qualifyCount < 3) {
             for (var c2 of Q.parties) {
+                if(c2 !="abstain") continue;
                 var betterCount = 0;
                 for (var other of Q.parties) {
+                    if(other !="abstain") continue;
                     if (c1.support[other] > c1.support[c2]) betterCount++;
                 }
                 c1.qualify[c2] = betterCount < 3;
@@ -114,18 +131,23 @@ for (var c1 of Q.OEVK) {
 for (var c1 of Q.OEVK) {
     if (c1.round == "second") {
         c1.support_r2 = {};
+        c1.r2allvotes = 0;
         for (var c2 of Q.parties) {
-            c1.support_r2[c2] = c1.support[c2];
+            c1.support_r2[c2] = c1.qualify[c2] ? c1.support[c2] : 0;
         }
         for (var c3 of Q.parties) {
             if (c1.qualify[c3]) continue;
             for (var c4 of Q.classes) {
-                var c3_votes_in_class = (Q[c4 + "_" + c3] / 100) * c1.classes[c4];
+                var c3_votes_in_class = (Q[c4 + "_" + c3] / 100) * c1.classes[c4] / 100 * 45000;
                 for (var c2 of Q.parties) {
                     if (!c1.qualify[c2]) continue;  // csak a bejutott jeloltek kapjak
                     c1.support_r2[c2] += c3_votes_in_class * Q.transit[c4][c3][c2];
                 }
             }
+        }
+        for (var c2 of Q.parties) {
+            if(c2 =="abstain") continue;
+            c1.r2allvotes += c1.support_r2[c2];
         }
     }
 }
@@ -134,12 +156,13 @@ for (var c1 of Q.OEVK) {
     if (c1.round == "second") {
         var maxV = -Infinity, maxP = null;
         for (var c2 of Q.parties) {
-            if (c1.qualify[c2] && c1.support_r2[c2] > maxV) {
+            if (c1.qualify[c2] && c1.support_r2[c2] > maxV && c2!='abstain') {
                 maxV = c1.support_r2[c2];
                 maxP = c2;
             }
         }
         c1.winner = maxP;
+        c1.winrate = maxV / c1.r2allvotes
         Q.oevkgain[maxP] += 1;
     }
 }
@@ -161,7 +184,7 @@ for (var d1 of Q.Region) {
     for (var d2 of Q.parties) {
         d1.total += d1.support[d2];
     }
-    d1.cutoff = d1.total / (d1.mandates + 1);
+    d1.cutoff = d1.allvoters / (d1.mandates + 1);
 }
 
 //Calculate the Hagenbach-Bischoff mandates, with filtering which parties are eligible for it
