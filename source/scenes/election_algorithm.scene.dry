@@ -177,7 +177,7 @@ for (var c1 of Q.OEVK) {
     }
 }
 
-//Calculate the Hagenbach-Bischoff formula qoutas for each region
+//Calculate the Hagenbach-Bischoff qoutas for each region
 
 for (var d1 of Q.Region) {
     d1.total = 0;
@@ -187,15 +187,34 @@ for (var d1 of Q.Region) {
     d1.cutoff = d1.allvoters / (d1.mandates + 1);
 }
 
-//Calculate the Hagenbach-Bischoff mandates, with filtering which parties are eligible for it
+//Calculate the Regional Mandates
 
 for (var f1 of Q.Region) {
     f1.gain = {};
     f1.comp = {};
+    f1.kioszt = 0;
+    f1.maradek = {};
     for (var f2 of Q.parties) {
         f1.gain[f2] = (Q.nattreshhold[f2]) ? Math.floor(f1.support[f2] / f1.cutoff) : 0;
         Q.reggain[f2] += f1.gain[f2];
+        f1.kioszt += f1.gain[f2];
         f1.comp[f2] = (Q.nattreshhold[f2]) ? f1.support[f2] - f1.gain[f2] * f1.cutoff : 0;
+    }
+    if (f1.mandates - f1.kioszt > 0){
+        for (var f3 of Q.parties){
+            var more = 0
+            for (var f4 of Q.parties){
+                if (f1.comp[f4] > f1.comp[f3]) more++;
+            }
+            if (more < (f1.mandates - f1.kioszt) && f1.comp[f3] >= 2*f1.cutoff/3){
+                f1.gain[f3] += 1;
+                Q.reggain[f3] += 1;
+                f1.maradek[f3] = true
+            }
+        }
+    }
+    for (var f5 of Q.parties){
+        f1.comp[f5] = f1.maradek[f5]? 0 : f1.comp[f5];
     }
 }
 
