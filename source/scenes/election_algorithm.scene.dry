@@ -78,7 +78,7 @@ for (var c1 of Q.parties){
 
 for(var c1 of Q.OEVK){
     momentum = Math.tan(Math.PI * (Math.random()-0.5)) //We want to simulate occasional outliers for local celebrities running, we do this with creating approximate Cauchy-Distribution based random number generation of Devroye (1986)
-    momentum = momentum*0.3-6 //Transform our numbers to give less outlier cases, and for the common case to be really low value
+    momentum = momentum*0.37-6 //Transform our numbers to give less outlier cases, and for the common case to be really low value
     momentum = 1 / (1 + Math.exp(momentum*-1)) //Put our random number into a Sigmoid / Logit function to make its value between 0 and 1, while taking into account the
     momentum = 0.3*momentum //We cap this momentum at about 30% so that it can be beaten if the local party is ver embedded
     for (var c2 of Q.parties){
