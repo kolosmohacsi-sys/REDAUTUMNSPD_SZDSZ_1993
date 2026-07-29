@@ -242,7 +242,7 @@ Q.new_middle_qol = 100;
 
 Q.classes = ["pensioners", "political_christians", "new_middle", "petite_bourgeoisie", "proletariat", "agricultural_worker", "farmer", "old_middle", "lumpenproletariat", "new_generation"];
 Q.parties = ['spd', 'kpd', 'z', 'ddp', 'dvp', 'dnvp', 'other','abstain'];
-Q.parliament_order = ['other','kpd', 'ddp', 'spd', 'dvp', 'dnvp', 'z', 'nsdap'];
+Q.parliament_order = ['other','kpd', 'ddp', 'spd', 'dvp', 'dnvp', 'z'];
 
 
 Q.party_names = {
@@ -268,6 +268,9 @@ Q.farmer_spd = 20; Q.farmer_kpd = 11; Q.farmer_z = 27; Q.farmer_ddp = 8; Q.farme
 Q.old_middle_spd = 33; Q.old_middle_kpd = 18; Q.old_middle_z = 21; Q.old_middle_ddp = 10; Q.old_middle_dvp = 5; Q.old_middle_dnvp = 2; Q.old_middle_other = 6; Q.old_middle_abstain = 5;
 Q.lumpenproletariat_spd = 22; Q.lumpenproletariat_kpd = 12; Q.lumpenproletariat_z = 19; Q.lumpenproletariat_ddp = 13; Q.lumpenproletariat_dvp = 6; Q.lumpenproletariat_dnvp = 3; Q.lumpenproletariat_other = 7; Q.lumpenproletariat_abstain = 18;
 Q.new_generation_spd = 29; Q.new_generation_kpd = 7; Q.new_generation_z = 18; Q.new_generation_ddp = 19; Q.new_generation_dvp = 7; Q.new_generation_dnvp = 2; Q.new_generation_other = 5; Q.new_generation_abstain = 13;
+
+
+
 
 // Current Reichstag composition
 // % of Reichstag in Jan 1928
