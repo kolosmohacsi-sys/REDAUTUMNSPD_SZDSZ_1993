@@ -258,7 +258,7 @@ Q.party_colors = {
 };
 
 
-/Q.workers_kpd = 38.4;
+Q.workers_kpd = 38.4;
 Q.workers_spd = 28.5;
 Q.workers_ddp = 4.1;
 Q.workers_z = 5.0;
