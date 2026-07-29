@@ -257,27 +257,71 @@ Q.party_colors = {
     dvp: '#445F2B', dnvp: '#3C8A5A', nsdap: '#9E863E', other: '#a0a0a0'
 };
 
+// Workers (Munkásság)
+/Q.workers_kpd = 38.4;
+Q.workers_spd = 28.5;
+Q.workers_ddp = 4.1;
+Q.workers_z = 5.0;
+Q.workers_dvp = 2.7;
+Q.workers_dnvp = 3.5;
+Q.workers_nsdap = 12.8;
+Q.workers_other = 0.0;
+Q.workers_abstain = 5.0;
 
-// TODO: add 'sapd' later on
-Q.sapd_formed = 0;
+// Old Middle (Régi középosztály / Kispolgárság, iparosok)
+Q.old_middle_kpd = 2.3;
+Q.old_middle_spd = 10.2;
+Q.old_middle_ddp = 8.9;
+Q.old_middle_z = 25.1;
+Q.old_middle_dvp = 14.0;
+Q.old_middle_dnvp = 25.6;
+Q.old_middle_nsdap = 7.2;
+Q.old_middle_other = 0.0;
+Q.old_middle_abstain = 6.7;
 
-// workers
-Q.workers_kpd = 38.4; Q.workers_spd = 10.5; Q.workers_ddp = 8.1; Q.workers_z = 7.0; Q.workers_dvp = 4.7; Q.workers_dnvp = 4.7; Q.workers_nsdap = 12.8; Q.workers_other = 0; Q.workers_abstain = 14.0;
+// New Middle (Új középosztály / Tisztviselők, értelmiség)
+Q.new_middle_kpd = 5.8;
+Q.new_middle_spd = 30.2;
+Q.new_middle_ddp = 22.4;
+Q.new_middle_z = 12.2;
+Q.new_middle_dvp = 8.6;
+Q.new_middle_dnvp = 5.6;
+Q.new_middle_nsdap = 6.3;
+Q.new_middle_other = 0.0;
+Q.new_middle_abstain = 8.9;
 
-// old_middle
-Q.old_middle_kpd = 3.3; Q.old_middle_spd = 12.2; Q.old_middle_ddp = 8.9; Q.old_middle_z = 31.1; Q.old_middle_dvp = 10.0; Q.old_middle_dnvp = 25.6; Q.old_middle_nsdap = 2.2; Q.old_middle_other = 0; Q.old_middle_abstain = 6.7;
+// Rural (Agrár / Vidéki lakosság)
+Q.rural_kpd = 4.5;
+Q.rural_spd = 8.5;
+Q.rural_ddp = 5.5;
+Q.rural_z = 20.9;
+Q.rural_dvp = 24.9;
+Q.rural_dnvp = 18.5;
+Q.rural_nsdap = 5.6;
+Q.rural_other = 0.0;
+Q.rural_abstain = 11.6;
 
-// new_middle
-Q.new_middle_kpd = 7.8; Q.new_middle_spd = 32.2; Q.new_middle_ddp = 24.4; Q.new_middle_z = 12.2; Q.new_middle_dvp = 5.6; Q.new_middle_dnvp = 5.6; Q.new_middle_nsdap = 3.3; Q.new_middle_other = 0; Q.new_middle_abstain = 8.9;
+// Unemployed (Munkanélküliek)
+Q.unemployed_kpd = 32.5;
+Q.unemployed_spd = 8.7;
+Q.unemployed_ddp = 2.7;
+Q.unemployed_z = 6.2;
+Q.unemployed_dvp = 3.2;
+Q.unemployed_dnvp = 4.1;
+Q.unemployed_nsdap = 22.3;
+Q.unemployed_other = 0.0;
+Q.unemployed_abstain = 20.3;
 
-// rural
-Q.rural_kpd = 10.5; Q.rural_spd = 3.5; Q.rural_ddp = 3.5; Q.rural_z = 20.9; Q.rural_dvp = 34.9; Q.rural_dnvp = 10.5; Q.rural_nsdap = 4.7; Q.rural_other = 0; Q.rural_abstain = 11.6;
-
-// unemployed
-Q.unemployed_kpd = 16.5; Q.unemployed_spd = 4.7; Q.unemployed_ddp = 4.7; Q.unemployed_z = 8.2; Q.unemployed_dvp = 8.2; Q.unemployed_dnvp = 7.1; Q.unemployed_nsdap = 15.3; Q.unemployed_other = 0; Q.unemployed_abstain = 35.3;
-
-// catholics
-Q.catholics_kpd = 3.2; Q.catholics_spd = 4.3; Q.catholics_ddp = 5.4; Q.catholics_z = 24.7; Q.catholics_dvp = 11.8; Q.catholics_dnvp = 39.8; Q.catholics_nsdap = 3.2; Q.catholics_other = 0; Q.catholics_abstain = 7.5;
+// Catholics (Katolikus vallásúak / Keresztényszociálisok)
+Q.catholics_kpd = 2.2;
+Q.catholics_spd = 6.3;
+Q.catholics_ddp = 3.4;
+Q.catholics_z = 62.7;
+Q.catholics_dvp = 4.8;
+Q.catholics_dnvp = 10.8;
+Q.catholics_nsdap = 2.3;
+Q.catholics_other = 0.0;
+Q.catholics_abstain = 7.5;
 
 // Current Reichstag composition
 // % of Reichstag in Jan 1928

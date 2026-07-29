@@ -1,38 +1,70 @@
 title: Election
 on-arrival: {!
 
-Q.transit = {}; //Defining the party transitional Matrix
+Q.transit = {}; // Defining party transitional Matrix
 
-for (var c1 of Q.classes){
+Q.ideology = {
+    'mszp': -6,
+    'szdsz': -2,
+    'fidesz': 1,
+    'mdf': 4,
+    'kdnp': 5,
+    'fkgp': 6,
+    'other': 0
+};
+
+Q.gamma = 0.25; // Ideológiai büntetés mértéke (minél nagyobb, annál kevésbé szavaznak át távoli pártra)
+
+Q.transit = {}; 
+
+for (var c1 of Q.classes) {
     Q.transit[c1] = {};
-    for (var c2 of Q.parties){
+    for (var c2 of Q.parties) {
         Q.transit[c1][c2] = {};
-        for (var c3 of Q.parties){
-            if (c2 == c3){
-                Q.transit[c1][c2][c3] = 1;
-            }else{
-                Q.transit[c1][c2][c3] = Q[c1 + "_" + c3] / (100 - Q[c1 + "_" + c2]);
+        
+        var totalRawWeight = 0;
+        var rawWeights = {};
+
+        for (var c3 of Q.parties) {
+            if (c2 === c3) {
+                rawWeights[c3] = 1.0;
+            } else if (c3 === 'abstain') {
+                // A távolmaradásra egy fix alapbeállítást hagyunk
+                rawWeights[c3] = (Q[c1 + "_abstain"] || 10) / 100;
+            } else {
+                // Demográfiai átszavazási alapérték
+                var demoWeight = Q[c1 + "_" + c3] / (100 - Q[c1 + "_" + c2]);
+
+                // Ideológiai távolság alapján történő súlyozás
+                var dist = Math.abs((Q.ideology[c2] || 0) - (Q.ideology[c3] || 0));
+                var ideoWeight = Math.exp(-Q.gamma * dist);
+
+                // A végső súly a demográfiai és ideológiai tényező szorzata
+                rawWeights[c3] = demoWeight * ideoWeight;
             }
+            totalRawWeight += rawWeights[c3];
+        }
+
+        // Normalizálás: a sor összege 1.0 (100%) legyen
+        for (var c3 of Q.parties) {
+            Q.transit[c1][c2][c3] = rawWeights[c3] / totalRawWeight;
         }
     }
 }
 
-Q.oevkgain = {}; //Defining the Array of Individual Constituency Winners
-Q.reggain = {}; //Defining the Array of Regional Mandate Wins
-Q.totalpref = {}; //Defining the Array of National Compensatory Mandates
+Q.oevkgain = {}; 
+Q.reggain = {}; 
+Q.totalpref = {}; 
 
-for (var p of Q.parties) { //Set it up for each party
+for (var p of Q.parties) { 
     Q.oevkgain[p] = 0;
     Q.reggain[p] = 0;
     Q.totalpref[p] = 0;
 }
 
-//We assume all OEVKs have 45 000 voters, so we calculate 176 * 45000
+Q.eligible = 7920000;
 
-Q.eligible = 7920000 //This means 7.92 million eligible voters, a bit high but whatever
-
-
-//Calculate Party Preferences in each Individual Constituency (OEVK)
+// Calculate Party Preferences in each OEVK
 for (var c1 of Q.OEVK) {
     c1.support = {};
     for (var c2 of Q.parties) {
@@ -45,7 +77,7 @@ for (var c1 of Q.OEVK) {
     c1.allvoters = 45000 - c1.support['abstain'];
 }
 
-//Aggregate Party Preferences for each Electoral Region
+// Aggregate Party Preferences for each Electoral Region
 for (var r1 of Q.Region) {
     r1.support = {};
     r1.allvoters = 0;
@@ -54,56 +86,49 @@ for (var r1 of Q.Region) {
         for (var r3 of Q.OEVK) {
             if (r3.region == r1.id) {
                 r1.support[r2] += r3.support[r2];
-                r1.allvoters += r3.support[r2]
+                r1.allvoters += r3.support[r2];
             }
         }
     } 
     r1.allvoters = r1.allvoters - r1.support['abstain'];
 }
 
-//Aggregate Party Preferences for the National Level
-
+// Aggregate Party Preferences for National Level
 Q.allvoters = 0;
 Q.nattreshhold = {};
 
 for (var c1 of Q.parties){
-    for (c2 of Q.Region){
+    for (var c2 of Q.Region){ // Fixed missing var
         if(c2){
-            Q.totalpref[c1] += c2.support[c1]
+            Q.totalpref[c1] += c2.support[c1];
         }
     }
-    Q.allvoters = Q.eligible - Q.totalpref['abstain'];
 }
+Q.allvoters = Q.eligible - Q.totalpref['abstain'];
 
-//Calculate Independents Effect on Elections
-
+// Calculate Independents Effect
 for(var c1 of Q.OEVK){
-    momentum = Math.tan(Math.PI * (Math.random()-0.5)) //We want to simulate occasional outliers for local celebrities running, we do this with creating approximate Cauchy-Distribution based random number generation of Devroye (1986)
-    momentum = momentum*0.37-6 //Transform our numbers to give less outlier cases, and for the common case to be really low value
-    momentum = 1 / (1 + Math.exp(momentum*-1)) //Put our random number into a Sigmoid / Logit function to make its value between 0 and 1, while taking into account the
-    momentum = 0.3*momentum //We cap this momentum at about 30% so that it can be beaten if the local party is ver embedded
+    var momentum = Math.tan(Math.PI * (Math.random()-0.5));
+    momentum = momentum*0.37-6;
+    momentum = 1 / (1 + Math.exp(momentum*-1));
+    momentum = 0.3*momentum;
     for (var c2 of Q.parties){
         if (c2 === "other") continue;
-        c1.support["other"] += c1.support[c2]*momentum
-        c1.support[c2] -= c1.support[c2]*momentum
+        c1.support["other"] += c1.support[c2]*momentum;
+        c1.support[c2] -= c1.support[c2]*momentum;
     }
 }
 
-
-//Check if a party exeecd the 4% national treshold
-
+// Check 4% National Threshold
 for (var c1 of Q.parties){
-    Q.nattreshhold[c1] = Q.totalpref[c1] / Q.allvoters * 100 > 4 && c1 != 'abstain' && c1 != "other";
+    Q.nattreshhold[c1] = (Q.totalpref[c1] / Q.allvoters * 100 > 4) && c1 !== 'abstain' && c1 !== "other";
 }
 
-//Decide which party wins each Individual consituency
-
-//Checking first rounds
-
+// OEVK First Round Checks
 for (var c1 of Q.OEVK) {
     if(c1.support['abstain'] < 22500){
         for (var c2 of Q.parties) {
-            if (c1.support[c2] > c1.allvoters*0.5 && c2!="abstain") {
+            if (c1.support[c2] > c1.allvoters*0.5 && c2 !== "abstain") {
                 c1.round = "first";
                 c1.winner = c2;
                 c1.winrate = c1.support[c2]/c1.allvoters;
@@ -116,17 +141,16 @@ for (var c1 of Q.OEVK) {
     }
 }
 
-//checking second rounds
-
+// OEVK Second Round Qualifications
 for (var c1 of Q.OEVK) {
     if (c1.round == "second") {
         c1.qualify = {};
         var qualifyCount = 0;
         for (var c2 of Q.parties) {
-            if (c2 != "abstain"){
+            if (c2 !== "abstain"){
                 c1.qualify[c2] = c1.support[c2] > c1.allvoters*0.15;
                 if (c1.qualify[c2]) qualifyCount++;
-            }else{
+            } else {
                 c1.qualify[c2] = true;
             }
         }
@@ -144,57 +168,115 @@ for (var c1 of Q.OEVK) {
     }
 }
 
+// Reallocating Voters (Multi-Hop Markov Chain)
 for (var c1 of Q.OEVK) {
-    if (c1.round == "second") {
-        c1.support_r2 = {};
-        c1.r2allvotes = 0;
-        for (var c2 of Q.parties) {
-            c1.support_r2[c2] = c1.qualify[c2] ? c1.support[c2] : 0;
-        }
-        for (var c3 of Q.parties) {
-            if (c1.qualify[c3]) continue;
-            for (var c4 of Q.classes) {
-                var c3_votes_in_class = (Q[c4 + "_" + c3] / 100) * c1.classes[c4] / 100 * 45000;
-                for (var c2 of Q.parties) {
-                    if (!c1.qualify[c2]) continue;  // csak a bejutott jeloltek kapjak
-                    c1.support_r2[c2] += c3_votes_in_class * Q.transit[c4][c3][c2];
+    if (c1.round === "second") {
+        var qualifiedList = Q.parties.filter(p => c1.qualify[p]);
+        
+        var P = {};
+        for (var c4 of Q.classes) {
+            P[c4] = {};
+            for (var c3 of Q.parties) {
+                P[c4][c3] = {};
+                if (c1.qualify[c3] || c3 === 'abstain') {
+                    for (var target of Q.parties) {
+                        P[c4][c3][target] = (c3 === target) ? 1.0 : 0.0;
+                    }
+                } else {
+                    var totalRowWeight = 0;
+                    for (var target of Q.parties) {
+                        totalRowWeight += Q.transit[c4][c3][target] || 0;
+                    }
+
+                    for (var target of Q.parties) {
+                        if (totalRowWeight > 0) {
+                            P[c4][c3][target] = (Q.transit[c4][c3][target] || 0) / totalRowWeight;
+                        } else {
+                            P[c4][c3][target] = (target === 'abstain') ? 1.0 : 0.0;
+                        }
+                    }
                 }
             }
         }
-        for (var c2 of Q.parties) {
-            if(c2 =="abstain") continue;
-            c1.r2allvotes += c1.support_r2[c2];
+
+        var currentSupport = {};
+        for (var c4 of Q.classes) {
+            currentSupport[c4] = {};
+            for (var c3 of Q.parties) {
+                currentSupport[c4][c3] = (Q[c4 + "_" + c3] / 100) * (c1.classes[c4] / 100) * 45000;
+            }
+        }
+
+        var maxHops = 10;
+        for (var hop = 0; hop < maxHops; hop++) {
+            var nextSupport = {};
+            var unallocatedVotesLeft = 0;
+
+            for (var c4 of Q.classes) {
+                nextSupport[c4] = {};
+                for (var p of Q.parties) nextSupport[c4][p] = 0;
+
+                for (var fromP of Q.parties) {
+                    var votesToMove = currentSupport[c4][fromP];
+                    if (!c1.qualify[fromP] && fromP !== 'abstain') {
+                        unallocatedVotesLeft += votesToMove;
+                    }
+                    for (var toP of Q.parties) {
+                        nextSupport[c4][toP] += votesToMove * P[c4][fromP][toP];
+                    }
+                }
+            }
+
+            currentSupport = nextSupport;
+            if (unallocatedVotesLeft < 0.1) break;
+        }
+
+        c1.support_r2 = {};
+        c1.r2allvotes = 0;
+        for (var p of Q.parties) c1.support_r2[p] = 0;
+
+        for (var c4 of Q.classes) {
+            for (var p of Q.parties) {
+                c1.support_r2[p] += currentSupport[c4][p];
+            }
+        }
+
+        for (var p of Q.parties) {
+            if (p !== 'abstain') {
+                c1.r2allvotes += c1.support_r2[p];
+            }
         }
     }
 }
 
+// Find Round 2 Winners
 for (var c1 of Q.OEVK) {
-    if (c1.round == "second") {
+    if (c1.round === "second") {
         var maxV = -Infinity, maxP = null;
         for (var c2 of Q.parties) {
-            if (c1.qualify[c2] && c1.support_r2[c2] > maxV && c2!='abstain') {
+            if (c1.qualify[c2] && c1.support_r2[c2] > maxV && c2 !== 'abstain') {
                 maxV = c1.support_r2[c2];
                 maxP = c2;
             }
         }
         c1.winner = maxP;
-        c1.winrate = maxV / c1.r2allvotes
+        c1.winrate = maxV / c1.r2allvotes;
         Q.oevkgain[maxP] += 1;
     }
 }
 
-//Check if the party eligible compensatory votes in OEVKs
-
+// OEVK Compensatory Votes Calculation
 for (var c1 of Q.OEVK) {
     c1.comp = {};
     for (var c2 of Q.parties) {
-        c1.comp[c2] = (c1.winner == c2) ? 0 : c1.support[c2];
+        // Fixed: Use support_r2 if district went to second round
+        var finalVotes = (c1.round === "second") ? c1.support_r2[c2] : c1.support[c2];
+        c1.comp[c2] = (c1.winner === c2) ? 0 : finalVotes;
         c1.comp[c2] = (Q.nattreshhold[c2]) ? c1.comp[c2] : 0; 
     }
 }
 
-//Calculate the Hagenbach-Bischoff qoutas for each region
-
+// Hagenbach-Bischoff Quotas
 for (var d1 of Q.Region) {
     d1.total = 0;
     for (var d2 of Q.parties) {
@@ -203,39 +285,42 @@ for (var d1 of Q.Region) {
     d1.cutoff = d1.allvoters / (d1.mandates + 1);
 }
 
-//Calculate the Regional Mandates
-
+// Regional Mandates Distribution
 for (var f1 of Q.Region) {
     f1.gain = {};
     f1.comp = {};
     f1.kioszt = 0;
     f1.maradek = {};
+    
     for (var f2 of Q.parties) {
         f1.gain[f2] = (Q.nattreshhold[f2]) ? Math.floor(f1.support[f2] / f1.cutoff) : 0;
         Q.reggain[f2] += f1.gain[f2];
         f1.kioszt += f1.gain[f2];
         f1.comp[f2] = (Q.nattreshhold[f2]) ? f1.support[f2] - f1.gain[f2] * f1.cutoff : 0;
     }
-    if (f1.mandates - f1.kioszt > 0){
+
+    var seatsAvailable = f1.mandates - f1.kioszt; // Fixed snapshot check
+
+    if (seatsAvailable > 0){
         for (var f3 of Q.parties){
-            var more = 0
+            var more = 0;
             for (var f4 of Q.parties){
                 if (f1.comp[f4] > f1.comp[f3]) more++;
             }
-            if (more < (f1.mandates - f1.kioszt) && f1.comp[f3] >= 2*f1.cutoff/3){
+            if (more < seatsAvailable && f1.comp[f3] >= 2*f1.cutoff/3){
                 f1.gain[f3] += 1;
                 Q.reggain[f3] += 1;
                 f1.maradek[f3] = true;
+                f1.kioszt += 1;
             }
         }
     }
     for (var f5 of Q.parties){
-        f1.comp[f5] = f1.maradek[f5]? 0 : f1.comp[f5];
+        f1.comp[f5] = f1.maradek[f5] ? 0 : f1.comp[f5];
     }
 }
 
-//Calculate compensatory votes for each party (note: non-eligible parties technically participate in these votings, but with 0 votes)
-
+// Total National Compensatory Pool
 Q.comp = {};
 for (var c1 of Q.parties) {
     Q.comp[c1] = 0;
@@ -247,8 +332,7 @@ for (var c1 of Q.parties) {
     }
 }
 
-//Calculate how many mandates should be given out through National Compensatory mandates
-
+// Calculate Remaining National Seat Pool
 Q.Natmand = 210;
 for (var c1 of Q.Region) {
     for (var c2 of Q.parties) {
@@ -256,8 +340,7 @@ for (var c1 of Q.Region) {
     }
 }
 
-//Iterate a D'hont formula to distriubte the mandates
-
+// D'Hondt Formula National Distribution
 Q.natgain = {};
 for (var p1 of Q.parties) Q.natgain[p1] = 0;
 
@@ -265,24 +348,24 @@ for (var i = 0; i < Q.Natmand; i++) {
     var bestParty = null;
     var bestQuotient = -1;
     for (var p2 of Q.parties) {
+        if (!Q.nattreshhold[p2]) continue; // Fixed: Skip ineligible parties
+        
         var quotient = Q.comp[p2] / (Q.natgain[p2] + 1);
         if (quotient > bestQuotient) {
             bestQuotient = quotient;
             bestParty = p2;
         }
     }
-    Q.natgain[bestParty] += 1;
+    if (bestParty) Q.natgain[bestParty] += 1;
 }
 
-//Saves seats to return the exact formula for the parlaiment
-
+// Total Seats Summary
 Q.seats = {};
 for (var p of Q.parties) {
     Q.seats[p] = Q.oevkgain[p] + Q.reggain[p] + Q.natgain[p];
 }
 
-//Round parlament proportions for aesthetic reasons
-
+// Parliament Proportions
 for (var p of Q.parties) {
     Q[p + "_r"] = Math.round((Q.seats[p] / 3.86)*100)/100;
 }
