@@ -241,7 +241,7 @@ Q.old_middle_qol = 100;
 Q.new_middle_qol = 100;
 
 Q.classes = ["pensioners", "political_christians", "new_middle", "petite_bourgeoisie", "proletariat", "agricultural_worker", "farmer", "old_middle", "lumpenproletariat", "new_generation"];
-Q.parties = ['spd', 'kpd', 'z', 'ddp', 'dvp', 'dnvp', 'nsdap', 'other','abstain'];
+Q.parties = ['spd', 'kpd', 'z', 'ddp', 'dvp', 'dnvp', 'other','abstain'];
 Q.parliament_order = ['other','kpd', 'ddp', 'spd', 'dvp', 'dnvp', 'z', 'nsdap'];
 
 
