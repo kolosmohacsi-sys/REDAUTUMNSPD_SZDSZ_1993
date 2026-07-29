@@ -4,13 +4,7 @@ on-arrival: {!
 Q.transit = {}; // Defining party transitional Matrix
 
 Q.ideology = {
-    'mszp': -6,
-    'szdsz': -2,
-    'fidesz': 1,
-    'mdf': 4,
-    'kdnp': 5,
-    'fkgp': 6,
-    'other': 0
+    'kpd': -6, 'spd': -2, 'ddp': 1, 'z': 4, 'dnvp': 5, 'dvp': 6, 'other': 0
 };
 
 Q.gamma = 0.25; // Ideológiai büntetés mértéke (minél nagyobb, annál kevésbé szavaznak át távoli pártra)
