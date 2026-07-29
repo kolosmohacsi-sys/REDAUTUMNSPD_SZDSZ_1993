@@ -1,7 +1,7 @@
 title: Election
 on-arrival: {!
 
-Q.transit = {}; //Defining
+Q.transit = {}; //Defining the party transitional Matrix
 
 for (var c1 of Q.classes){
     Q.transit[c1] = {};
@@ -18,10 +18,10 @@ for (var c1 of Q.classes){
 }
 
 Q.oevkgain = {}; //Defining the Array of Individual Constituency Winners
-Q.reggain = {};
-Q.totalpref = {};
+Q.reggain = {}; //Defining the Array of Regional Mandate Wins
+Q.totalpref = {}; //Defining the Array of National Compensatory Mandates
 
-for (var p of Q.parties) {
+for (var p of Q.parties) { //Set it up for each party
     Q.oevkgain[p] = 0;
     Q.reggain[p] = 0;
     Q.totalpref[p] = 0;
@@ -29,7 +29,8 @@ for (var p of Q.parties) {
 
 //We assume all OEVKs have 45 000 voters, so we calculate 176 * 45000
 
-Q.eligible = 7920000
+Q.eligible = 7920000 //This means 7.92 million eligible voters, a bit high but whatever
+
 
 //Calculate Party Preferences in each Individual Constituency (OEVK)
 for (var c1 of Q.OEVK) {
@@ -131,10 +132,10 @@ for (var c1 of Q.OEVK) {
         }
         if (qualifyCount < 3) {
             for (var c2 of Q.parties) {
-                if(c2 !="abstain") continue;
+                if(c2 === "abstain") continue;
                 var betterCount = 0;
                 for (var other of Q.parties) {
-                    if(other !="abstain") continue;
+                    if(other === "abstain") continue;
                     if (c1.support[other] > c1.support[c2]) betterCount++;
                 }
                 c1.qualify[c2] = betterCount < 3;
@@ -224,7 +225,7 @@ for (var f1 of Q.Region) {
             if (more < (f1.mandates - f1.kioszt) && f1.comp[f3] >= 2*f1.cutoff/3){
                 f1.gain[f3] += 1;
                 Q.reggain[f3] += 1;
-                f1.maradek[f3] = true
+                f1.maradek[f3] = true;
             }
         }
     }
