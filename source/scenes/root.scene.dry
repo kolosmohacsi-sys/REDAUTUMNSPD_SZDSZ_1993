@@ -249,7 +249,7 @@ farmer: "Smallholders",
 old_middle: "Old Middle Class", 
 lumpenproletariat: "Lumpenproletariat",
 new_generation : "Youth"
-}
+};
 
 
 Q.parties = ['spd', 'kpd', 'z', 'ddp', 'dvp', 'dnvp', 'other','abstain'];
