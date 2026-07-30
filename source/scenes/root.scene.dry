@@ -258,19 +258,16 @@ Q.party_colors = {
 };
 
 
-Q.pensioners_spd = 13; Q.pensioners_kpd = 11; Q.pensioners_z = 29; Q.pensioners_ddp = 3; Q.pensioners_dvp = 17; Q.pensioners_dnvp = 10; Q.pensioners_other = 7; Q.pensioners_abstain = 10;
-Q.political_christians_spd = 20; Q.political_christians_kpd = 4; Q.political_christians_z = 26; Q.political_christians_ddp = 5; Q.political_christians_dvp = 11; Q.political_christians_dnvp = 19; Q.political_christians_other = 8; Q.political_christians_abstain = 7;
-Q.new_middle_spd = 34; Q.new_middle_kpd = 17; Q.new_middle_z = 23; Q.new_middle_ddp = 15; Q.new_middle_dvp = 1; Q.new_middle_dnvp = 2; Q.new_middle_other = 2; Q.new_middle_abstain = 6;
-Q.petite_bourgeoisie_spd = 31; Q.petite_bourgeoisie_kpd = 8; Q.petite_bourgeoisie_z = 17; Q.petite_bourgeoisie_ddp = 10; Q.petite_bourgeoisie_dvp = 6; Q.petite_bourgeoisie_dnvp = 3; Q.petite_bourgeoisie_other = 16; Q.petite_bourgeoisie_abstain = 9;
-Q.proletariat_spd = 31; Q.proletariat_kpd = 13; Q.proletariat_z = 17; Q.proletariat_ddp = 10; Q.proletariat_dvp = 8; Q.proletariat_dnvp = 1; Q.proletariat_other = 8; Q.proletariat_abstain = 12;
-Q.agricultural_worker_spd = 12; Q.agricultural_worker_kpd = 13; Q.agricultural_worker_z = 21; Q.agricultural_worker_ddp = 10; Q.agricultural_worker_dvp = 14; Q.agricultural_worker_dnvp = 1; Q.agricultural_worker_other = 13; Q.agricultural_worker_abstain = 16;
-Q.farmer_spd = 20; Q.farmer_kpd = 11; Q.farmer_z = 27; Q.farmer_ddp = 8; Q.farmer_dvp = 16; Q.farmer_dnvp = 0; Q.farmer_other = 9; Q.farmer_abstain = 9;
-Q.old_middle_spd = 33; Q.old_middle_kpd = 18; Q.old_middle_z = 21; Q.old_middle_ddp = 10; Q.old_middle_dvp = 5; Q.old_middle_dnvp = 2; Q.old_middle_other = 6; Q.old_middle_abstain = 5;
-Q.lumpenproletariat_spd = 22; Q.lumpenproletariat_kpd = 12; Q.lumpenproletariat_z = 19; Q.lumpenproletariat_ddp = 13; Q.lumpenproletariat_dvp = 6; Q.lumpenproletariat_dnvp = 3; Q.lumpenproletariat_other = 7; Q.lumpenproletariat_abstain = 18;
-Q.new_generation_spd = 29; Q.new_generation_kpd = 7; Q.new_generation_z = 18; Q.new_generation_ddp = 19; Q.new_generation_dvp = 7; Q.new_generation_dnvp = 2; Q.new_generation_other = 5; Q.new_generation_abstain = 13;
-
-
-
+Q.pensioners_spd = 10; Q.pensioners_kpd = 9; Q.pensioners_z = 23; Q.pensioners_ddp = 2; Q.pensioners_dvp = 13; Q.pensioners_dnvp = 8; Q.pensioners_other = 1; Q.pensioners_abstain = 34;
+Q.political_christians_spd = 17; Q.political_christians_kpd = 3; Q.political_christians_z = 22; Q.political_christians_ddp = 4; Q.political_christians_dvp = 9; Q.political_christians_dnvp = 16; Q.political_christians_other = 1; Q.political_christians_abstain = 28;
+Q.new_middle_spd = 27; Q.new_middle_kpd = 14; Q.new_middle_z = 18; Q.new_middle_ddp = 12; Q.new_middle_dvp = 1; Q.new_middle_dnvp = 2; Q.new_middle_other = 1; Q.new_middle_abstain = 25;
+Q.petite_bourgeoisie_spd = 28; Q.petite_bourgeoisie_kpd = 7; Q.petite_bourgeoisie_z = 15; Q.petite_bourgeoisie_ddp = 9; Q.petite_bourgeoisie_dvp = 5; Q.petite_bourgeoisie_dnvp = 3; Q.petite_bourgeoisie_other = 1; Q.petite_bourgeoisie_abstain = 32;
+Q.proletariat_spd = 25; Q.proletariat_kpd = 10; Q.proletariat_z = 14; Q.proletariat_ddp = 8; Q.proletariat_dvp = 6; Q.proletariat_dnvp = 1; Q.proletariat_other = 1; Q.proletariat_abstain = 35;
+Q.agricultural_worker_spd = 10; Q.agricultural_worker_kpd = 11; Q.agricultural_worker_z = 17; Q.agricultural_worker_ddp = 8; Q.agricultural_worker_dvp = 12; Q.agricultural_worker_dnvp = 1; Q.agricultural_worker_other = 1; Q.agricultural_worker_abstain = 40;
+Q.farmer_spd = 16; Q.farmer_kpd = 9; Q.farmer_z = 22; Q.farmer_ddp = 6; Q.farmer_dvp = 13; Q.farmer_dnvp = 0; Q.farmer_other = 1; Q.farmer_abstain = 33;
+Q.old_middle_spd = 27; Q.old_middle_kpd = 15; Q.old_middle_z = 17; Q.old_middle_ddp = 8; Q.old_middle_dvp = 4; Q.old_middle_dnvp = 2; Q.old_middle_other = 1; Q.old_middle_abstain = 26;
+Q.lumpenproletariat_spd = 16; Q.lumpenproletariat_kpd = 9; Q.lumpenproletariat_z = 14; Q.lumpenproletariat_ddp = 10; Q.lumpenproletariat_dvp = 4; Q.lumpenproletariat_dnvp = 2; Q.lumpenproletariat_other = 1; Q.lumpenproletariat_abstain = 44;
+Q.new_generation_spd = 15; Q.new_generation_kpd = 4; Q.new_generation_z = 12; Q.new_generation_ddp = 26; Q.new_generation_dvp = 4; Q.new_generation_dnvp = 2; Q.new_generation_other = 1; Q.new_generation_abstain = 36;
 
 // Current Reichstag composition
 // % of Reichstag in Jan 1928
