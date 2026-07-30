@@ -210,9 +210,9 @@ for (var c1 in Q.classes){
     Q.class_size[c1] = Q.class_size / 100;
 }
 
-far (var c1 in Q.parties){
+for (var c1 in Q.parties){
     Q[c1 + "_votes"] = 0;
-    far (var c2 in Q.classes){
+    for (var c2 in Q.classes){
         Q[c1+"_votes"] += Q[c2+"_"+c1]*Q.class_size[c2];
     }
 }
