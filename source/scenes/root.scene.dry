@@ -283,7 +283,7 @@ Q.new_generation_spd = 15; Q.new_generation_kpd = 4; Q.new_generation_z = 12; Q.
 for (var c1 of Q.parties){
     Q[c1+"_"+votes] = 0;
     for (var c2 of Q.classes){
-        Q[c1+"_"+votes] += Q.class_size[c2] * Q.[c2+"_"+c1] /100;
+        Q[c1+"_"+votes] += Q.class_size[c2] * Q[c2+"_"+c1] /100;
     }
 }
 
