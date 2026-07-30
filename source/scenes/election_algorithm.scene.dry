@@ -58,8 +58,8 @@ for (var p of Q.parties) {
 
 Q.eligible = 7920000;
 
-// Calculate Party Preferences in each OEVK
-for (var c1 of Q.OEVK) {
+// Calculate Party Preferences in each oevk
+for (var c1 of Q.oevk) {
     c1.support = {};
     for (var c2 of Q.parties) {
         c1.support[c2] = 0;
@@ -77,7 +77,7 @@ for (var r1 of Q.Region) {
     r1.allvoters = 0;
     for (var r2 of Q.parties) {
         r1.support[r2] = 0;
-        for (var r3 of Q.OEVK) {
+        for (var r3 of Q.oevk) {
             if (r3.region == r1.id) {
                 r1.support[r2] += r3.support[r2];
                 r1.allvoters += r3.support[r2];
@@ -101,7 +101,7 @@ for (var c1 of Q.parties){
 Q.allvoters = Q.eligible - Q.totalpref['abstain'];
 
 // Calculate Independents Effect
-for(var c1 of Q.OEVK){
+for(var c1 of Q.oevk){
     var momentum = Math.tan(Math.PI * (Math.random()-0.5));
     momentum = momentum*0.37-6;
     momentum = 1 / (1 + Math.exp(momentum*-1));
@@ -118,8 +118,8 @@ for (var c1 of Q.parties){
     Q.nattreshhold[c1] = (Q.totalpref[c1] / Q.allvoters * 100 > 4) && c1 !== 'abstain' && c1 !== "other";
 }
 
-// OEVK First Round Checks
-for (var c1 of Q.OEVK) {
+// oevk First Round Checks
+for (var c1 of Q.oevk) {
     if(c1.support['abstain'] < 22500){
         for (var c2 of Q.parties) {
             if (c1.support[c2] > c1.allvoters*0.5 && c2 !== "abstain") {
@@ -135,8 +135,8 @@ for (var c1 of Q.OEVK) {
     }
 }
 
-// OEVK Second Round Qualifications
-for (var c1 of Q.OEVK) {
+// oevk Second Round Qualifications
+for (var c1 of Q.oevk) {
     if (c1.round == "second") {
         c1.qualify = {};
         var qualifyCount = 0;
@@ -163,7 +163,7 @@ for (var c1 of Q.OEVK) {
 }
 
 // Reallocating Voters (Multi-Hop Markov Chain)
-for (var c1 of Q.OEVK) {
+for (var c1 of Q.oevk) {
     if (c1.round === "second") {
         var qualifiedList = Q.parties.filter(p => c1.qualify[p]);
         
@@ -244,7 +244,7 @@ for (var c1 of Q.OEVK) {
 }
 
 // Find Round 2 Winners
-for (var c1 of Q.OEVK) {
+for (var c1 of Q.oevk) {
     if (c1.round === "second") {
         var maxV = -Infinity, maxP = null;
         for (var c2 of Q.parties) {
@@ -259,8 +259,8 @@ for (var c1 of Q.OEVK) {
     }
 }
 
-// OEVK Compensatory Votes Calculation
-for (var c1 of Q.OEVK) {
+// oevk Compensatory Votes Calculation
+for (var c1 of Q.oevk) {
     c1.comp = {};
     for (var c2 of Q.parties) {
         // Fixed: Use support_r2 if district went to second round
@@ -318,7 +318,7 @@ for (var f1 of Q.Region) {
 Q.comp = {};
 for (var c1 of Q.parties) {
     Q.comp[c1] = 0;
-    for (var c2 of Q.OEVK) {
+    for (var c2 of Q.oevk) {
         Q.comp[c1] += c2.comp[c1];
     }
     for (var c3 of Q.Region) {
